@@ -91,34 +91,94 @@ endpoint with JSON payload:
 
 You may use `httpie` package to do this by executing:
 
+**Good example:**
+
 ```
-http POST http://localhost:5000/parse-love-story love_story="A loves B, A hates B and B loves A."
+http POST http://localhost:5000/parse-love-story love_story="A loves B, A hates C. A loves M while M loves C."
 ```
 
 Expected output is:
 
 ```
 [
-    {
-        "data": {
-            "A": {
-                "hates": [
-                    "B"
-                ],
-                "loves": [
-                    "B"
-                ]
-            },
-            "B": {
-                "loves": [
-                    "A"
-                ]
-            }
-        },
-        "errors": [
-            "Duplicated love case: `A loves / hates B`"
-        ]
-    }
+   {
+      "data":{
+         "A":{
+            "hates":[
+               "C"
+            ],
+            "loves":[
+               "B"
+            ]
+         }
+      },
+      "errors":[]
+   },
+   {
+      "data":{
+         "A":{
+            "loves":[
+               "M"
+            ]
+         },
+         "M":{
+            "loves":[
+               "C"
+            ]
+         }
+      },
+      "errors":[]
+   }
+]
+```
+
+**Bad example with DISABLED validation:**
+
+```
+http POST http://localhost:5000/parse-love-story love_story="A loves B, A loves B."
+```
+
+Expected output is:
+
+```
+[
+   {
+      "data":{
+         "A":{
+            "loves":[
+               "B",
+               "B"
+            ]
+         }
+      },
+      "errors":[]
+   }
+]
+```
+
+**Bad example with ENABLED validation:**
+
+```
+http POST http://localhost:5000/parse-love-story love_story="A loves B, A loves B."
+```
+
+Expected output is:
+
+```
+[
+   {
+      "data":{
+         "A":{
+            "loves":[
+               "B",
+               "B"
+            ]
+         }
+      },
+      "errors":[
+         "Duplicated love case: `A loves B`"
+      ]
+   }
 ]
 ```
 
