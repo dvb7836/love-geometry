@@ -1,5 +1,8 @@
 # Love Geomertry
 
+## Theory 
+
+### Description
 Application to parse Love Stories.
 
 Love story is a set of sentences separated by a dot '.' 
@@ -10,9 +13,9 @@ example: `A loves B`. Relationship also can be
 represented as a double-ended relationship with
 `mutually` keywoard.
 
-## Example
+### Example
 
-### input:
+**Input:**
 
 A loves B but B hates A.
 
@@ -20,7 +23,8 @@ A hates B, A loves D while B loves C and D hates A.
 
 A mutually hates B.
 
-### output:
+**Output:**
+
 ```
 [
   {
@@ -42,78 +46,61 @@ A mutually hates B.
 ## Data flow
 
 After "love story" was received it's got processed with several components:
-1. Parser:
 
-during parsing some cases got validated:
-- duplicated love case ("A loves B, A loves B.")
-- more than one feeling to the same object ("A loves B, A hates B.")
+1. Parser. During parsing some cases got validated:
+	- duplicated love case ("A loves B, A loves B.")
+	- more than one feeling to the same object ("A loves B, A hates B.")
 
-2. Serializer:
-
-during serialization some cases got validated:
-
-- duplicated sentences ("A loves B. A loves B.")
+1. Serializer. During serialization some cases got validated:
+	- duplicated sentences ("A loves B. A loves B.")
 
 
 ## Requirements
 
-- **Python** 3.9.
-- Several Python packages:
-	- **pyPEG2**.
-	- **flask**.
-	- **marshmallow**.
-	- **networkx**.
-	- **matplotlib**.
+**Python 3.9**
 
-## Usage
+## Installation
 
 Make sure you're running python3.9
 
-- Navigate to the directory which contains package file:
+1. Checkout from repository
+1. Create virtual environment to setup application:
+	`python -m venv env`
 
-`love-geometry-danil-buiko-v1-1.tar.gz`
+	And activate it.
+   
+   	Windows: `env\Scripts\activate`
+   
+	Linux: `source env/bin/activate`
+1. Setup dependencies by running `pip install -r requirements.txt` 
 
-- Create virtual environment to setup application:
+## Initialization
 
-`python -m venv env`
+1. Run application by executing `python -m love_geometry`
 
-And activate it:
+## Usage
 
-Windows:
-  `env\Scripts\activate`
+To use package you may want to execute `POST` request against `/parse-love-story` 
+endpoint with JSON payload:
 
-Linux:
-  `source env/bin/activate`
-  
-- Unpack `.tar.gz` archive.
+```
+{
+   "love_story":"A loves B, A hates B and B loves A."
+}
+```
 
-- Navigate to the package directory
+You may use `httpie` package to do this by executing:
 
-- Run installation script: `python setup.py install`
+```
+http POST http://localhost:5000/parse-love-story love_story="A loves B, A hates B and B loves A."
+```
 
-- Run `tox` to execute tests
+Expected output is:
 
-- Navigate to `love_geometry` directory and set environment variable
+TBD
 
-Windows:
+## Testing 
 
- `set FLASK_APP=server`
-
-Linux:
-
- `export FLASK_APP=server`
-
-- Run application with `flask run` command.
-
-- Application will start on port `5000`.
-
-- To send requests to the application it's possible to use `httpie` utility:
-
-`echo '{"love_story": "A loves B, A hates B and B loves A."}' | http POST http://127.0.0.1:5000/parse-love-story`
-
-payload: 
-`{"love_story": "A loves B, A loves C and B loves A."}`
-
-- Check `love_geometry.ipynb` for simple playground.
+1. Run `tox` to execute tests
 
 

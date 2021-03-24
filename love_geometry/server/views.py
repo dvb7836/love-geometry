@@ -1,12 +1,14 @@
 import json
-from flask import request, abort
+from flask import Blueprint, request, abort
 
-from love_geometry.server import app
 from love_geometry.server.exceptions import ParserError, ValidationError
 from love_geometry.server.services.orchestrator import LoveStoryOrchestrator
 
 
-@app.route('/parse-love-story', methods=["POST"])
+api_blueprint = Blueprint("api", __name__)
+
+
+@api_blueprint.route('/parse-love-story', methods=["POST"])
 def parse_love_story():
     love_story = request.json.get("love_story")
     orchestrator = LoveStoryOrchestrator()
@@ -22,7 +24,7 @@ def parse_love_story():
     return json.dumps(result)
 
 
-@app.route('/find-circles-of-affection', methods=["POST"])
+@api_blueprint.route('/find-circles-of-affection', methods=["POST"])
 def find_circles_of_affection():
     love_story = request.json.get("love_story")
 
