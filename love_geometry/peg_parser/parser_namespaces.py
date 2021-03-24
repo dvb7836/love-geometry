@@ -7,6 +7,9 @@ import love_geometry.peg_parser.consts as consts
 from love_geometry.server.services.validator import LoveStoryValidator
 import love_geometry.server.consts as server_consts
 
+from .people import Person
+from .love_case import LoveCase
+
 
 class ExtendedNamespace(Namespace):
     def __init__(self, *args, **kwargs):

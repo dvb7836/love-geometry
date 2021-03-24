@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pypeg2 import parse
 
-from love_geometry.peg_parser.parser import LoveStory
+from love_geometry.peg_parser.sentence import LoveStory
 from love_geometry.server.exceptions import ParserError
 
 

@@ -57,11 +57,9 @@ After "love story" was received it's got processed with several components:
 
 ## Requirements
 
-**Python 3.9**
+**Python >= 3.6**
 
 ## Installation
-
-Make sure you're running python3.9
 
 1. Checkout from repository
 1. Create virtual environment to setup application:
