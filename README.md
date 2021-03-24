@@ -97,7 +97,30 @@ http POST http://localhost:5000/parse-love-story love_story="A loves B, A hates 
 
 Expected output is:
 
-TBD
+```
+[
+    {
+        "data": {
+            "A": {
+                "hates": [
+                    "B"
+                ],
+                "loves": [
+                    "B"
+                ]
+            },
+            "B": {
+                "loves": [
+                    "A"
+                ]
+            }
+        },
+        "errors": [
+            "Duplicated love case: `A loves / hates B`"
+        ]
+    }
+]
+```
 
 ## Testing 
 
