@@ -4,14 +4,37 @@ from flask import Blueprint, request, abort
 from love_geometry.server.exceptions import ParserError, ValidationError
 from love_geometry.server.services.orchestrator import LoveStoryOrchestrator
 
-
 api_blueprint = Blueprint("api", __name__)
+
+
+def str_to_bool(value):
+    if value is None:
+        return False
+
+    if isinstance(value, bool):
+        return value
+
+    value = str(value).strip()
+    if not value:
+        return False
+
+    ret = bool(value)
+    if not ret:
+        return False
+
+    value = str(value).lower()
+    ret = True if value in ["true", "1", "on", "yes"] else False
+
+    return ret
 
 
 @api_blueprint.route('/parse-love-story', methods=["POST"])
 def parse_love_story():
     love_story = request.json.get("love_story")
-    orchestrator = LoveStoryOrchestrator()
+    validate = str_to_bool(request.json.get("validate"))
+
+    print(f"validate = {validate}")
+    orchestrator = LoveStoryOrchestrator(validate)
     try:
         result = orchestrator.parse_love_story(love_story)
 

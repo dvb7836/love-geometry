@@ -7,11 +7,14 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.exception import NetworkXNoCycle
 
-import love_geometry.server.consts as consts
+from love_geometry.server.consts import VISUALIZE_CIRCLES_OF_AFFECTION
 from love_geometry.server.services.validator import LoveStoryValidator
 
 
-class CircleFinder:
+class CircleFinder(object):
+    def __init__(self, validate_data: bool):
+        self._validate_data = validate_data
+
     def find_circles_of_affection(self, love_story: list) -> Tuple[list, Optional[list]]:
         sentence_list = list()
         for sentence in love_story:
@@ -42,20 +45,20 @@ class CircleFinder:
         cycles_in_sentences = list()
         cheaters_list = list()
         for out_sentence in sentence_list:
-            if consts.VALIDATE_LOVE_STORIES:
+            if self._validate_data:
                 cheaters = LoveStoryValidator.find_cheaters(out_sentence)
                 cheaters_list.append(cheaters)
                 if cheaters:
                     for cheater in cheaters:
                         remove_cheater_from_sentence = [graph.remove_node(cheater) for graph in out_sentence.values()]  # noqa F481
 
-            output = self.__find_cycles(out_sentence)
+            output = self._find_cycles(out_sentence)
             cycles_in_sentences.append(output)
 
-        return cycles_in_sentences if not consts.VALIDATE_LOVE_STORIES else cycles_in_sentences, cheaters_list
+        return cycles_in_sentences if not self._validate_data else cycles_in_sentences, cheaters_list
 
     @staticmethod
-    def __find_cycles(sentence: dict, visualize=consts.VISUALIZE_CIRCLES_OF_AFFECTION) -> dict:
+    def _find_cycles(sentence: dict, visualize=VISUALIZE_CIRCLES_OF_AFFECTION) -> dict:
         cycles = dict()
         for feeling, graph in sentence.items():
             try:

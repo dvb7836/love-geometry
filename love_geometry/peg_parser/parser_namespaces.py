@@ -5,7 +5,6 @@ from pypeg2 import Namespace, Symbol
 
 import love_geometry.peg_parser.consts as consts
 from love_geometry.server.services.validator import LoveStoryValidator
-import love_geometry.server.consts as server_consts
 
 from .people import Person
 from .love_case import LoveCase
@@ -15,7 +14,7 @@ class ExtendedNamespace(Namespace):
     def __init__(self, *args, **kwargs):
         self._love_case = kwargs.get("love_case")
         self.errors = list()
-        self._validate = server_consts.VALIDATE_LOVE_STORIES
+        self._validate_love_stories = kwargs.get("validate_love_stories")
         super().__init__(*args, **kwargs)
 
     def mutual_feelings_check(self, value) -> Optional[bool]:
@@ -25,7 +24,7 @@ class ExtendedNamespace(Namespace):
             if has_mutual_feeling:
                 person1 = str(value.name)
                 person2 = str(value.data.get(feeling)[0])
-                if server_consts.VALIDATE_LOVE_STORIES:
+                if self._validate_love_stories:
                     existing_data1 = self.data.get(person1)
                     existing_names_for_that_feeling1 = list(existing_data1.data.values())[0] if existing_data1 else []
                     existing_data2 = self.data.get(person2)
@@ -66,7 +65,7 @@ class ExtendedNamespace(Namespace):
                 if feeling_should_be_extended:
                     existing_names_for_that_feeling = self.data[name].data[feeling]
                     new_name_to_add = value.data[feeling][0]
-                    if server_consts.VALIDATE_LOVE_STORIES:
+                    if self._validate_love_stories:
                         error = LoveStoryValidator.check_for_duplicate(
                             existing_names_for_that_feeling,
                             new_name_to_add,
@@ -78,7 +77,7 @@ class ExtendedNamespace(Namespace):
                     all_feelings_exist = True
 
             if not all_feelings_exist:
-                if server_consts.VALIDATE_LOVE_STORIES:
+                if self._validate_love_stories:
                     existing_names_for_that_feeling = list(self.data[name].data.values())
                     new_name_to_add = list(value.data.values())[0][0]
                     existing_feeling = list(self.data[name].data.keys())[0]
@@ -101,7 +100,7 @@ class ExtendedNamespace(Namespace):
             self.data[str(person)].data = self.data[str(person)].data | love_case.data
 
     def __setitem__(self, key: Symbol, value: LoveCase) -> None:
-        if server_consts.VALIDATE_LOVE_STORIES and not consts.ALLOW_HIGH_SELF_ESTEEM:
+        if self._validate_love_stories and not consts.ALLOW_HIGH_SELF_ESTEEM:
             related_name = list(value.data.values())[0][0]
             related_feeling = list(value.data.keys())[0]
             error = LoveStoryValidator.check_for_duplicate(key, related_name, related_feeling)
@@ -110,6 +109,7 @@ class ExtendedNamespace(Namespace):
 
         if self.mutual_feelings_check(value):
             return
+
         elif self.existing_feelings_check(key, value):
             return
 
