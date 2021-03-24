@@ -1,0 +1,17 @@
+# Include the README
+include *.md
+
+# Include the MANIFEST
+include MANIFEST.in
+
+# Include the Jupiter notebook
+include love_geometry.ipynb
+
+# Include setup.py
+include setup.py
+
+# Include tox.ini
+include tox.ini
+
+# Include requirements.txt
+include requirements.txt

@@ -1,0 +1,7 @@
+requests
+pyPEG2==2.15.2
+flask==1.1.2
+marshmallow==3.10.0
+networkx==2.5
+matplotlib
+tox
