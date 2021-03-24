@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Optional
 import itertools
 
 from love_geometry.server.exceptions import ValidationError
