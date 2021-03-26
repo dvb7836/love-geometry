@@ -47,12 +47,11 @@ A mutually hates B.
 
 After "love story" was received it's got processed with several components:
 
-1. Parser. During parsing some cases got validated:
-	- duplicated love case ("A loves B, A loves B.")
-	- more than one feeling to the same object ("A loves B, A hates B.")
+1. Parser. Parses provided love story sting and outputs parsed data.
 
-1. Serializer. During serialization some cases got validated:
-	- duplicated sentences ("A loves B. A loves B.")
+1. Validator. Validates parsed love story by converting it to XML.
+
+1. Serializer. Serializes parsed love story to JSON.
 
 
 ## Requirements
