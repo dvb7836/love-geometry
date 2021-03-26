@@ -4,19 +4,12 @@ from typing import Optional
 from pypeg2 import Namespace, Symbol
 
 import love_geometry.peg_parser.consts as consts
-from love_geometry.server.services.validator import LoveStoryValidator
 
-from .people import Person
 from .love_case import LoveCase
+from .people import People
 
 
 class ExtendedNamespace(Namespace):
-    def __init__(self, *args, **kwargs):
-        self._love_case = kwargs.get("love_case")
-        self.errors = list()
-        self._validate_love_stories = kwargs.get("validate_love_stories")
-        super().__init__(*args, **kwargs)
-
     def mutual_feelings_check(self, value) -> Optional[bool]:
         for feeling in consts.FEELINGS:
             has_mutual_feeling = value.data.get(feeling) and getattr(value.data.get(feeling),
@@ -24,89 +17,48 @@ class ExtendedNamespace(Namespace):
             if has_mutual_feeling:
                 person1 = str(value.name)
                 person2 = str(value.data.get(feeling)[0])
-                if self._validate_love_stories:
-                    existing_data1 = self.data.get(person1)
-                    existing_names_for_that_feeling1 = list(existing_data1.data.values())[0] if existing_data1 else []
-                    existing_data2 = self.data.get(person2)
-                    existing_names_for_that_feeling2 = list(existing_data2.data.values())[0] if existing_data2 else []
-                    if existing_names_for_that_feeling1:
-                        existing_feeling = list(existing_data1.data.keys())[0]
-                        error = LoveStoryValidator.check_for_duplicate(
-                            existing_names_for_that_feeling1,
-                            person2,
-                            f"{consts.DOUBLE_ENDED_RELATIONSHIP_FLAG_KEYWORD} {feeling} / {existing_feeling}",
-                            person1)
-                        if error:
-                            self.errors.append(error)
-                    elif existing_names_for_that_feeling2:
-                        existing_feeling = list(existing_data2.data.keys())[0]
-                        error = LoveStoryValidator.check_for_duplicate(
-                            existing_names_for_that_feeling2,
-                            person1,
-                            f"{consts.DOUBLE_ENDED_RELATIONSHIP_FLAG_KEYWORD} {feeling} / {existing_feeling}",
-                            person2)
-                        if error:
-                            self.errors.append(error)
 
-                love_case1 = self._love_case.generate_persons_love_case(person1, person2, feeling)
-                love_case2 = self._love_case.generate_persons_love_case(person2, person1, feeling)
-
-                self._save_persons_love_case(person1, love_case1)
-                self._save_persons_love_case(person2, love_case2)
+                self._add_love_cases_for_both_persons(person1, person2, feeling)
 
                 return True
 
-    def existing_feelings_check(self, key: Symbol, value: LoveCase) -> Optional[bool]:
-        name = key
-        all_feelings_exist = False
-        if name in self.data:
-            for feeling in consts.FEELINGS:
-                feeling_should_be_extended = self.data[name].data.get(feeling) and value.data.get(feeling)
-                if feeling_should_be_extended:
-                    existing_names_for_that_feeling = self.data[name].data[feeling]
-                    new_name_to_add = value.data[feeling][0]
-                    if self._validate_love_stories:
-                        error = LoveStoryValidator.check_for_duplicate(
-                            existing_names_for_that_feeling,
-                            new_name_to_add,
-                            feeling,
-                            key)
-                        if error:
-                            self.errors.append(error)
-                    existing_names_for_that_feeling.extend(new_name_to_add)
-                    all_feelings_exist = True
-
-            if not all_feelings_exist:
-                if self._validate_love_stories:
-                    existing_names_for_that_feeling = list(self.data[name].data.values())
-                    new_name_to_add = list(value.data.values())[0][0]
-                    existing_feeling = list(self.data[name].data.keys())[0]
-                    new_feeling = list(value.data.keys())[0]
-                    error = LoveStoryValidator.check_for_duplicate(
-                        existing_names_for_that_feeling,
-                        new_name_to_add,
-                        f"{existing_feeling} / {new_feeling}",
-                        key)
-                    if error:
-                        self.errors.append(error)
-                self.data[name].data = self.data[name].data | value.data
+    def existing_feelings_check(self, origin_name: Symbol, value: LoveCase) -> Optional[bool]:
+        if origin_name in self.data:
+            if not self._extend_existing_names_for_that_feeling(origin_name, value):
+                self.data[origin_name].data = self.data[origin_name].data | value.data
 
             return True
 
-    def _save_persons_love_case(self, person: Person, love_case: LoveCase) -> None:
+    def _extend_existing_names_for_that_feeling(self, origin_name: Symbol, value: LoveCase) -> Optional[bool]:
+        for feeling in consts.FEELINGS:
+            feeling_should_be_extended = self.data[origin_name].data.get(feeling) and value.data.get(feeling)
+            if feeling_should_be_extended:
+                new_name_to_add = value.data[feeling][0]
+                existing_names_for_that_feeling = self.data[origin_name].data[feeling]
+                existing_names_for_that_feeling.extend(new_name_to_add)
+
+                return True
+
+    def _add_love_cases_for_both_persons(self, person1: str, person2: str, feeling: str) -> None:
+        love_case1 = self._generate_persons_love_case(person1, person2, feeling)
+        love_case2 = self._generate_persons_love_case(person2, person1, feeling)
+        self._add_love_case_for_person(person1, love_case1)
+        self._add_love_case_for_person(person2, love_case2)
+
+    @staticmethod
+    def _generate_persons_love_case(person1: str, person2: str, feeling: str) -> LoveCase:
+        return LoveCase(
+            [Symbol(feeling), People([person2], name=Symbol(feeling))],
+            name=Symbol(person1)
+        )
+
+    def _add_love_case_for_person(self, person: str, love_case: LoveCase):
         if not self.data.get(person):
-            self.data[str(person)] = love_case
+            self.data[person] = love_case
         else:
-            self.data[str(person)].data = self.data[str(person)].data | love_case.data
+            self.data[person].data = self.data[person].data | love_case.data
 
     def __setitem__(self, key: Symbol, value: LoveCase) -> None:
-        if self._validate_love_stories and not consts.ALLOW_HIGH_SELF_ESTEEM:
-            related_name = list(value.data.values())[0][0]
-            related_feeling = list(value.data.keys())[0]
-            error = LoveStoryValidator.check_for_duplicate(key, related_name, related_feeling)
-            if error:
-                self.errors.append(error)
-
         if self.mutual_feelings_check(value):
             return
 

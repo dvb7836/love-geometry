@@ -2,9 +2,24 @@ from __future__ import annotations
 import itertools
 
 from love_geometry.server.exceptions import ValidationError
+from pypeg2.xmlast import create_tree, xml2thing, thing2xml
+from lxml import etree
+from xmldiff import main
 
 
 class LoveStoryValidator:
+    @staticmethod
+    def validate(parsed_love_story):
+        xml_tree = create_tree(parsed_love_story)
+
+        sentences = xml_tree.findall('Sentence')
+        if len(sentences) > 1:
+            for sentence1, sentence2 in itertools.combinations(sentences, 2):
+                if not main.diff_trees(sentence1, sentence2):
+                    raise ValidationError(f"duplicated sentences")
+
+        return
+
     @staticmethod
     def check_for_duplicated_sentences(sentences: list):
         for sentence1, sentence2 in itertools.combinations(sentences, 2):

@@ -33,7 +33,6 @@ def parse_love_story():
     love_story = request.json.get("love_story")
     validate = str_to_bool(request.json.get("validate"))
 
-    print(f"validate = {validate}")
     orchestrator = LoveStoryOrchestrator(validate)
     try:
         result = orchestrator.parse_love_story(love_story)
