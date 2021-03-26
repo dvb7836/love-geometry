@@ -32,6 +32,8 @@ def str_to_bool(value):
 def parse_love_story():
     love_story = request.json.get("love_story")
     validate = str_to_bool(request.json.get("validate"))
+    if not isinstance(love_story, str):
+        return abort(422, "incorrect input")
 
     orchestrator = LoveStoryOrchestrator(validate)
     try:
