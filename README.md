@@ -3,15 +3,35 @@
 ## Theory 
 
 ### Description
-Application to parse Love Stories.
+API to parse Love Stories.
 
 Love story is a set of sentences separated by a dot '.' 
+
+*example:
+(A loves D while B loves C and D hates A. M hates N.)*
 
 Love story consists of love cases. Each love case 
 represents relationship between two objects.
 example: `A loves B`. Relationship also can be 
 represented as a double-ended relationship with
 `mutually` keywoard.
+
+API has two endpoints:
+
+- `/parse-love-story` - used to parse love story into a list of sentences;
+
+- `/find-circles-of-affection` - used to build a graph representing 
+  relationships from a text story and find elementary cycles in it;
+  
+  - can find cheaters (if validation enabled):
+		
+	* Someone considered as a cheater in case if has more than one 
+	feeling to the same person.
+	
+	* In case if cheater is found it's got removed from the circle of affection candidates and 
+	circle search happens without a cheater.
+	  
+  - can show visual representation of built graph (if enabled in config)
 
 ### Example
 
@@ -23,9 +43,9 @@ A hates B, A loves D while B loves C and D hates A.
 
 A mutually hates B.
 
-**Output:**
+**Output from `/parse-love-story` endpoint:**
 
-```
+```buildoutcfg
 [
   {
     'A': { 'loves': ['B'] },
@@ -43,6 +63,28 @@ A mutually hates B.
 ]
 ```
 
+**Output from `/find-circles-of-affection`**
+```buildoutcfg
+{
+   "circles_of_affection":[
+      {},
+      {},
+      {
+         "hates":[
+            [
+               "A",
+               "B"
+            ],
+            [
+               "B",
+               "A"
+            ]
+         ]
+      }
+   ],
+   "cheaters":[]
+}
+```
 ## Data flow
 
 After "love story" was received it's got processed with several components:
