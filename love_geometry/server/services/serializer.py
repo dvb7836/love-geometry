@@ -25,3 +25,8 @@ class LoveStorySerializer:
         sentences = sentence_schema.dump(parsed_love_story, many=True)
 
         return list(sentences)
+
+
+class InputSchema(Schema):
+    love_story = fields.Str(required=True)
+    validate = fields.Bool()

@@ -46,16 +46,22 @@ class CircleFinder(object):
         cheaters_list = list()
         for out_sentence in sentence_list:
             if self._validate_data:
-                cheaters = LoveStoryValidator.find_cheaters(out_sentence)
+                cheaters = self._remove_cheaters_from_sentence(out_sentence)
                 cheaters_list.append(cheaters)
-                if cheaters:
-                    for cheater in cheaters:
-                        remove_cheater_from_sentence = [graph.remove_node(cheater) for graph in out_sentence.values()]  # noqa F481
 
             output = self._find_cycles(out_sentence)
             cycles_in_sentences.append(output)
 
         return cycles_in_sentences if not self._validate_data else cycles_in_sentences, cheaters_list
+
+    @staticmethod
+    def _remove_cheaters_from_sentence(out_sentence):
+        cheaters = LoveStoryValidator.find_cheaters(out_sentence)
+        if cheaters:
+            for cheater in cheaters:
+                [graph.remove_node(cheater) for graph in out_sentence.values()]
+
+        return cheaters
 
     @staticmethod
     def _find_cycles(sentence: dict, visualize=VISUALIZE_CIRCLES_OF_AFFECTION) -> dict:

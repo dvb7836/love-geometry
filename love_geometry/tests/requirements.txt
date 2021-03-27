@@ -1,3 +1,4 @@
 tox==3.22.0
 flake8==3.8.4
 flask
+pytest

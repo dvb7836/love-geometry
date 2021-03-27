@@ -1,8 +1,12 @@
 from collections import OrderedDict
 
 from love_geometry.server.services.parser import LoveStoryParser
+from love_geometry.server.exceptions import ValidationError
+from love_geometry.server.services.orchestrator import LoveStoryOrchestrator
 from love_geometry.peg_parser.consts import FEELINGS, LOVE_CASE_SEPARATORS
 from love_geometry.tests.love_story_generator import generate_love_story
+
+import pytest
 
 
 def test_should_parse_single_sentence_story():
@@ -58,15 +62,46 @@ def test_should_parse_story_with_flag_keyword():
         assert love_story[0][p2][f][0] == p1
 
 
-def test_should_error_if_duplicated_love_case():
+def test_should_error_if_duplicated_love_case_and_validation_on():
     love_story_sentence = "A loves A."
 
-    love_story = LoveStoryParser().parse_love_story(love_story_sentence)
-    assert love_story_sentence.strip(".") in love_story[0].__dict__.get("errors")[0]
+    with pytest.raises(ValidationError) as excinfo:
+        LoveStoryOrchestrator(validate_love_story=True).parse_love_story(love_story_sentence)
+
+    assert excinfo.value.args[0] == "feelings to itself are not permitted"
 
 
-def test_should_error_if_multiple_feelings_to_one_person():
+def test_should_not_error_if_duplicated_love_case():
+    love_story_sentence = "A loves A."
+
+    assert LoveStoryOrchestrator(validate_love_story=False).parse_love_story(love_story_sentence)
+
+
+def test_should_error_if_multiple_feelings_to_one_person_and_validation_on():
     love_story_sentence = "A loves B and A hates B."
 
-    love_story = LoveStoryParser().parse_love_story(love_story_sentence)
-    assert "Duplicated love case" in love_story[0].__dict__.get("errors")[0]
+    with pytest.raises(ValidationError) as excinfo:
+        LoveStoryOrchestrator(validate_love_story=True).parse_love_story(love_story_sentence)
+
+    assert excinfo.value.args[0] == "duplicated relationship: A - ['B']"
+
+
+def test_should_not_error_if_multiple_feelings_to_one_person():
+    love_story_sentence = "A loves B and A hates B."
+
+    assert LoveStoryOrchestrator(validate_love_story=False).parse_love_story(love_story_sentence)
+
+
+def test_should_error_if_duplicated_sentence_and_validation_on():
+    love_story_sentence = "A loves B. A loves B."
+
+    with pytest.raises(ValidationError) as excinfo:
+        LoveStoryOrchestrator(validate_love_story=True).parse_love_story(love_story_sentence)
+
+    assert excinfo.value.args[0] == "duplicated sentences"
+
+
+def test_should_not_error_if_duplicated_sentence():
+    love_story_sentence = "A loves B. A loves B."
+
+    assert LoveStoryOrchestrator(validate_love_story=False).parse_love_story(love_story_sentence)

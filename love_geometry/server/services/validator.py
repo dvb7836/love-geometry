@@ -19,18 +19,30 @@ class LoveStoryValidator:
         xml_tree = create_tree(parsed_love_story)
 
         sentences = xml_tree.findall('Sentence')
-        if len(sentences) > 1:
-            for sentence1, sentence2 in itertools.combinations(sentences, 2):
-                if not main.diff_trees(sentence1, sentence2):
-                    raise ValidationError(f"duplicated sentences")
+        if len(sentences) < 2:
+            return
+
+        for sentence1, sentence2 in itertools.combinations(sentences, 2):
+            if not main.diff_trees(sentence1, sentence2):
+                raise ValidationError(f"duplicated sentences")
+
+    def check_for_duplicated_love_case(self, parsed_love_story):
+        for sentence in parsed_love_story:
+            self._validate_sentence(sentence)
 
     @staticmethod
-    def check_for_duplicated_love_case(parsed_love_story):
-        for sentence in parsed_love_story:
-            for origin_name, love_case in list(sentence.items()):
-                for feeling, people in love_case.items():
-                    if origin_name in people and not ALLOW_FEELINGS_TO_ITSELF:
-                        raise ValidationError(f"feelings to itself are not permitted")
+    def _validate_sentence(sentence):
+        for origin_name, love_case in list(sentence.items()):
+            feeling_to = list()
+            for feeling, people in love_case.items():
+                feeling_to.append(list(people))
+
+                if origin_name in people and not ALLOW_FEELINGS_TO_ITSELF:
+                    raise ValidationError(f"feelings to itself are not permitted")
+
+            duplicated = set(feeling_to[0]).intersection(*feeling_to[1:])
+            if duplicated:
+                raise ValidationError(f"duplicated relationship: {origin_name} - {feeling_to[0]}")
 
     @staticmethod
     def find_cheaters(sentence: dict) -> list:

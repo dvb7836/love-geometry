@@ -1,10 +1,10 @@
-class ParserError(Exception):
+class ParserError(BaseException):
     pass
 
 
-class ValidationError(Exception):
+class ValidationError(BaseException):
     pass
 
 
-class DuplicatedLoveCaseError(Exception):
+class DuplicatedLoveCaseError(BaseException):
     pass
