@@ -9,8 +9,13 @@ from ..consts import ALLOW_FEELINGS_TO_ITSELF
 
 
 class LoveStoryValidator:
+    def __init__(self, validate_data: bool):
+        self._validate_data = validate_data
 
     def validate(self, parsed_love_story):
+        if not self._validate_data:
+            return
+
         self.check_for_duplicated_sentence(parsed_love_story)
         self.check_for_duplicated_love_case(parsed_love_story)
 

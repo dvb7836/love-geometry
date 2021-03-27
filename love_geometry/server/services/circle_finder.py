@@ -41,7 +41,7 @@ class CircleFinder(object):
 
         return sentence_dict
 
-    def _find_cycles_in_sentences(self, sentence_list: list) -> Tuple[list, Optional[list]]:
+    def _find_cycles_in_sentences(self, sentence_list: list) -> Tuple:
         cycles_in_sentences = list()
         cheaters_list = list()
         for out_sentence in sentence_list:
@@ -52,7 +52,7 @@ class CircleFinder(object):
             output = self._find_cycles(out_sentence)
             cycles_in_sentences.append(output)
 
-        return cycles_in_sentences if not self._validate_data else cycles_in_sentences, cheaters_list
+        return cycles_in_sentences, cheaters_list
 
     @staticmethod
     def _remove_cheaters_from_sentence(out_sentence):
