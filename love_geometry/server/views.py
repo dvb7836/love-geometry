@@ -29,7 +29,7 @@ def parse_love_story():
 
 @api_blueprint.route('/find-circles-of-affection', methods=["POST"])
 @expects_marshmallow_json(InputSchema)
-@marshal_response_with(ApiResponseModelSchema, many=True, envelope="data")
+@marshal_response_with(ApiResponseModelSchema)
 def find_circles_of_affection():
     parsed_request: InputModel = g.data
 
