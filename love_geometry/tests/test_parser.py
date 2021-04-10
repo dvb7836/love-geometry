@@ -68,7 +68,7 @@ def test_should_error_if_duplicated_love_case_and_validation_on():
     with pytest.raises(ValidationError) as excinfo:
         LoveStoryOrchestrator(validate_love_story=True).parse_love_story(love_story_sentence)
 
-    assert excinfo.value.args[0] == "feelings to itself are not permitted"
+    assert excinfo.value.args[0].message == "feelings to itself are not permitted"
 
 
 def test_should_not_error_if_duplicated_love_case():
@@ -83,7 +83,7 @@ def test_should_error_if_multiple_feelings_to_one_person_and_validation_on():
     with pytest.raises(ValidationError) as excinfo:
         LoveStoryOrchestrator(validate_love_story=True).parse_love_story(love_story_sentence)
 
-    assert excinfo.value.args[0] == "duplicated relationship: A - ['B']"
+    assert "duplicated relationship" in excinfo.value.args[0].message
 
 
 def test_should_not_error_if_multiple_feelings_to_one_person():
@@ -98,7 +98,7 @@ def test_should_error_if_duplicated_sentence_and_validation_on():
     with pytest.raises(ValidationError) as excinfo:
         LoveStoryOrchestrator(validate_love_story=True).parse_love_story(love_story_sentence)
 
-    assert excinfo.value.args[0] == "duplicated sentences"
+    assert "duplicated sentence" in excinfo.value.args[0].message
 
 
 def test_should_not_error_if_duplicated_sentence():
