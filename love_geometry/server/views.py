@@ -8,7 +8,7 @@ from love_geometry.server.exceptions import (BadRequestException, ParserError,
                                              ValidationError)
 from love_geometry.server.services.orchestrator import LoveStoryOrchestrator
 from love_geometry.server.services.serializer import (ApiResponseModelSchema,
-                                                      InputSchema, InputModel)
+                                                      InputModel, InputSchema)
 
 from .decorators import expects_marshmallow_json, marshal_response_with
 
