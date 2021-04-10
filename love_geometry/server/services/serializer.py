@@ -1,6 +1,24 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load
+from dataclasses import dataclass
+from http import HTTPStatus
+from typing import Dict, List
 
 from love_geometry.peg_parser.consts import FEELINGS
+
+
+@dataclass
+class InputModel(object):
+    love_story: str = None
+    validate: bool = None
+
+
+class InputSchema(Schema):
+    love_story = fields.Str(required=True)
+    validate = fields.Bool(default=False)
+
+    @post_load
+    def make_instance(self, data, **_kwargs):
+        return InputModel(**data)
 
 
 LoveCase = type('LoveCase', (Schema, ), {
@@ -24,9 +42,19 @@ class LoveStorySerializer:
         sentence_schema = SentenceSchema()
         sentences = sentence_schema.dump(parsed_love_story, many=True)
 
-        return list(sentences)
+        return sentences
 
 
-class InputSchema(Schema):
-    love_story = fields.Str(required=True)
-    validate = fields.Bool()
+@dataclass
+class ApiResponseModel(object):
+    ok: bool = True
+    message: str = None
+    status_code: int = HTTPStatus.OK
+    payload: List = None
+
+
+class ApiResponseModelSchema(Schema):
+    ok = fields.Boolean(required=True, allow_none=False)
+    message = fields.Str(required=False, allow_none=True)
+    status_code = fields.Int(required=True, allow_none=False)
+    payload = fields.List(fields.Dict)

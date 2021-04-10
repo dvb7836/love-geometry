@@ -3,7 +3,9 @@ pyPEG2==2.15.2
 flask==1.1.2
 marshmallow
 networkx==2.5
-matplotlib~=3.3.4
+matplotlib
 tox
 setuptools~=53.0.0
 xmldiff
+
+-r requirements-flake8.txt

@@ -25,8 +25,7 @@ class ExtendedNamespace(Namespace):
     def existing_feelings_check(self, origin_name: Symbol, value: LoveCase) -> Optional[bool]:
         if origin_name in self.data:
             if not self._extend_existing_names_for_that_feeling(origin_name, value):
-                self.data[origin_name].data = self.data[origin_name].data | value.data
-
+                self.data[origin_name].data = {**self.data[origin_name].data, **value.data}
             return True
 
     def _extend_existing_names_for_that_feeling(self, origin_name: Symbol, value: LoveCase) -> Optional[bool]:
@@ -35,7 +34,7 @@ class ExtendedNamespace(Namespace):
             if feeling_should_be_extended:
                 new_name_to_add = value.data[feeling][0]
                 existing_names_for_that_feeling = self.data[origin_name].data[feeling]
-                existing_names_for_that_feeling.extend(new_name_to_add)
+                existing_names_for_that_feeling.append(new_name_to_add)
 
                 return True
 
@@ -48,15 +47,14 @@ class ExtendedNamespace(Namespace):
     @staticmethod
     def _generate_persons_love_case(person1: str, person2: str, feeling: str) -> LoveCase:
         return LoveCase(
-            [Symbol(feeling), People([person2], name=Symbol(feeling))],
-            name=Symbol(person1)
+            [Symbol(feeling), People([person2], name=Symbol(feeling))], name=Symbol(person1)
         )
 
     def _add_love_case_for_person(self, person: str, love_case: LoveCase):
         if not self.data.get(person):
             self.data[person] = love_case
         else:
-            self.data[person].data = self.data[person].data | love_case.data
+            self.data[person].data = {**self.data[person].data, **love_case.data}
 
     def __setitem__(self, key: Symbol, value: LoveCase) -> None:
         if self.mutual_feelings_check(value):

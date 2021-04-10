@@ -11,6 +11,6 @@ class LoveStoryParser(object):
         try:
             parsed_story = parse(love_story_text, LoveStory)
         except SyntaxError as e:
-            raise ParserError(e)
+            raise ParserError(exception=e)
 
         return parsed_story

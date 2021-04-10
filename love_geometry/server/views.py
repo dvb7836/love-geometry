@@ -1,58 +1,58 @@
-from distutils.util import strtobool
-from flask import Blueprint, request, abort
-import json
-from http import HTTPStatus
-from marshmallow import ValidationError as MarshmallowValidationError
+import sys
+import traceback
+from logging import getLogger
 
-from love_geometry.server.exceptions import ParserError, ValidationError
+from flask import Blueprint, g, jsonify
+
+from love_geometry.server.exceptions import (BadRequestException, ParserError,
+                                             ValidationError)
 from love_geometry.server.services.orchestrator import LoveStoryOrchestrator
+from love_geometry.server.services.serializer import (ApiResponseModelSchema,
+                                                      InputSchema, InputModel)
 
-from .services.serializer import InputSchema
-from .util import str_to_bool
-
+from .decorators import expects_marshmallow_json, marshal_response_with
 
 api_blueprint = Blueprint("api", __name__)
+logger = getLogger(__name__)
 
 
 @api_blueprint.route('/parse-love-story', methods=["POST"])
+@expects_marshmallow_json(InputSchema)
+@marshal_response_with(ApiResponseModelSchema)
 def parse_love_story():
-    love_story = request.json.get("love_story")
-    validate = str_to_bool(request.json.get("validate"))
-    try:
-        InputSchema().load({"love_story": love_story, "validate": validate})
-    except MarshmallowValidationError as err:
-        return abort(HTTPStatus.NOT_ACCEPTABLE, f"{err}")
+    parsed_request: InputModel = g.data
 
-    orchestrator = LoveStoryOrchestrator(validate)
-    try:
-        result = orchestrator.parse_love_story(love_story)
+    orchestrator = LoveStoryOrchestrator(parsed_request.validate)
 
-    except ParserError as e:
-        err = {"message": f"Can't parse provided Love Story: `{e}`"}
-        return abort(HTTPStatus.UNPROCESSABLE_ENTITY, err)
-    except ValidationError as e:
-        return abort(HTTPStatus.NOT_ACCEPTABLE, e)
-
-    return json.dumps(result)
+    return orchestrator.parse_love_story(parsed_request.love_story)
 
 
 @api_blueprint.route('/find-circles-of-affection', methods=["POST"])
+@expects_marshmallow_json(InputSchema)
+@marshal_response_with(ApiResponseModelSchema, many=True, envelope="data")
 def find_circles_of_affection():
-    love_story = request.json.get("love_story")
-    validate = str_to_bool(request.json.get("validate"))
-    try:
-        InputSchema().load({"love_story": love_story, "validate": validate})
-    except MarshmallowValidationError as err:
-        return abort(HTTPStatus.NOT_ACCEPTABLE, f"{err}")
+    parsed_request: InputModel = g.data
 
-    orchestrator = LoveStoryOrchestrator(validate)
-    try:
-        result = orchestrator.find_circles_of_affection(love_story)
+    orchestrator = LoveStoryOrchestrator(parsed_request.validate)
 
-    except ParserError as e:
-        err = {"message": f"Can't parse provided Love Story: `{e}`"}
-        return abort(HTTPStatus.UNPROCESSABLE_ENTITY, err)
-    except ValidationError as e:
-        return abort(HTTPStatus.NOT_ACCEPTABLE, e)
+    return orchestrator.find_circles_of_affection(parsed_request.love_story)
 
-    return json.dumps(result)
+
+@api_blueprint.errorhandler(BadRequestException)
+@api_blueprint.errorhandler(ParserError)
+@api_blueprint.errorhandler(ValidationError)
+def handle_api_exceptions(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    stack_trace = traceback.format_exception(exc_type, exc_value, exc_traceback)
+
+    logger.warning(
+        f"{error.__class__.__name__} exception. Hidden payload: {error.hidden_payload} message: {error.message}"
+    )
+
+    stack_trace = "\n".join(stack_trace)
+    logger.error(f"Stack trace: {stack_trace}")
+
+    return response
