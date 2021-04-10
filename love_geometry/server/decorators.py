@@ -49,7 +49,7 @@ def marshal_response_with(
             if hasattr(func_result, "status_code"):
                 force_status_code = func_result.status_code
 
-            response_data = {"payload": [a.get("data") for a in func_result]}  # XXX
+            response_data = func_result
             response_code = status_code if force_status_code is None else force_status_code
 
             try:

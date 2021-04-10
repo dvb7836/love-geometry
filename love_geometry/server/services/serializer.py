@@ -38,11 +38,11 @@ class SentenceSchema(Schema):
 
 class LoveStorySerializer:
     @staticmethod
-    def serialize(parsed_love_story) -> list:
+    def serialize(parsed_love_story) -> Dict[str, list]:
         sentence_schema = SentenceSchema()
         sentences = sentence_schema.dump(parsed_love_story, many=True)
 
-        return sentences
+        return {"payload": [a.get("data") for a in sentences]}  # XXX
 
 
 @dataclass
