@@ -15,11 +15,9 @@ class CircleFinder(object):
     def __init__(self, validate_data: bool):
         self._validate_data = validate_data
 
-    def find_circles_of_affection(self, love_story: list) -> Tuple[list, Optional[list]]:
+    def find_circles_of_affection(self, love_story: Optional[list]) -> Tuple[list, Optional[list]]:
         sentence_list = list()
         for sentence in love_story:
-            sentence = sentence.get("data")
-
             sentence_graph_dict = self._build_sentence_dict(sentence)
 
             sentence_list.append(sentence_graph_dict)

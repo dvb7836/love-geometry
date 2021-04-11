@@ -46,43 +46,76 @@ A mutually hates B.
 **Output from `/parse-love-story` endpoint:**
 
 ```buildoutcfg
-[
-  {
-    'A': { 'loves': ['B'] },
-    'B': { 'hates': ['A'] }
-  },
-  {
-    'A': { 'hates': ['B'], 'loves': ['D'] },
-    'B': { 'loves': ['C'] },
-    'D': { 'hates': 'A' }
-  },
-  {
-    'A': { 'hates': ['B'] },
-    'B': { 'hates': ['A'] }
-  }
-]
+{
+    "payload": [
+        {
+            "A": {
+                "loves": [
+                    "B"
+                ]
+            },
+            "B": {
+                "hates": [
+                    "A"
+                ]
+            }
+        },
+        {
+            "A": {
+                "hates": [
+                    "B"
+                ],
+                "loves": [
+                    "D"
+                ]
+            },
+            "B": {
+                "loves": [
+                    "C"
+                ]
+            },
+            "D": {
+                "hates": [
+                    "A"
+                ]
+            }
+        },
+        {
+            "A": {
+                "hates": [
+                    "B"
+                ]
+            },
+            "B": {
+                "hates": [
+                    "A"
+                ]
+            }
+        }
+    ]
+}
 ```
 
 **Output from `/find-circles-of-affection`**
 ```buildoutcfg
 {
-   "circles_of_affection":[
-      {},
-      {},
-      {
-         "hates":[
-            [
-               "A",
-               "B"
-            ],
-            [
-               "B",
-               "A"
+    "message": "cheaters: []",
+    "payload": [
+        {},
+        {},
+        {
+            "hates": [
+                [
+                    "A",
+                    "B"
+                ],
+                [
+                    "B",
+                    "A"
+                ]
             ]
-         ]
-      }
-   ],
-   "cheaters":[]
+        }
+    ]
 }
 ```
 ## Data flow
@@ -104,13 +137,12 @@ After "love story" was received it's got processed with several components:
 
 1. Checkout from repository
 1. Create virtual environment to setup application:
-	`python -m venv env`
-
-	And activate it.
+	`python -m venv env` and activate it:
    
    	Windows: `env\Scripts\activate`
+		Linux: `source env/bin/activate`
    
-	Linux: `source env/bin/activate`
+
 1. Setup dependencies by running `pip install -r requirements.txt` 
 
 ## Initialization
@@ -124,7 +156,8 @@ endpoint with JSON payload:
 
 ```
 {
-   "love_story":"A loves B, A hates B and B loves A."
+   "love_story": "A loves B, A hates B and B loves A.",
+   "validate": False
 }
 ```
 
@@ -139,36 +172,32 @@ http POST http://localhost:5000/parse-love-story love_story="A loves B, A hates 
 Expected output is:
 
 ```
-[
-   {
-      "data":{
-         "A":{
-            "hates":[
-               "C"
-            ],
-            "loves":[
-               "B"
-            ]
-         }
-      },
-      "errors":[]
-   },
-   {
-      "data":{
-         "A":{
-            "loves":[
-               "M"
-            ]
-         },
-         "M":{
-            "loves":[
-               "C"
-            ]
-         }
-      },
-      "errors":[]
-   }
-]
+{
+    "payload": [
+        {
+            "A": {
+                "hates": [
+                    "C"
+                ],
+                "loves": [
+                    "B"
+                ]
+            }
+        },
+        {
+            "A": {
+                "loves": [
+                    "M"
+                ]
+            },
+            "M": {
+                "loves": [
+                    "C"
+                ]
+            }
+        }
+    ]
+}
 ```
 
 **Bad example with DISABLED validation:**
@@ -180,19 +209,18 @@ http POST http://localhost:5000/parse-love-story love_story="A loves B, A loves 
 Expected output is:
 
 ```
-[
-   {
-      "data":{
-         "A":{
-            "loves":[
-               "B",
-               "B"
-            ]
-         }
-      },
-      "errors":[]
-   }
-]
+{
+    "payload": [
+        {
+            "A": {
+                "loves": [
+                    "B",
+                    "B"
+                ]
+            }
+        }
+    ]
+}
 ```
 
 **Bad example with ENABLED validation:**
@@ -204,21 +232,12 @@ http POST http://localhost:5000/parse-love-story love_story="A loves B, A loves 
 Expected output is:
 
 ```
-[
-   {
-      "data":{
-         "A":{
-            "loves":[
-               "B",
-               "B"
-            ]
-         }
-      },
-      "errors":[
-         "Duplicated love case: `A loves B`"
-      ]
-   }
-]
+{
+    "message": "duplicated relationship: A - [People(['B', 'B'], name=Symbol('loves'))]",
+    "ok": false,
+    "payload": null,
+    "status_code": 406
+}
 ```
 
 ## Testing 
