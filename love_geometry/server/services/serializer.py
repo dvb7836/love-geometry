@@ -42,7 +42,7 @@ class LoveStorySerializer(object):
         sentence_schema = SentenceSchema()
         sentences = sentence_schema.dump(parsed_love_story, many=True)
 
-        return ApiResponseModel(payload=[a.get("data") for a in sentences])  # XXX
+        return ApiResponseModel(payload=[_.get("data") for _ in sentences])  # XXX
 
 
 @dataclass
