@@ -36,13 +36,13 @@ class SentenceSchema(Schema):
     errors = fields.List(fields.Str())
 
 
-class LoveStorySerializer:
+class LoveStorySerializer(object):
     @staticmethod
     def serialize(parsed_love_story: "LoveStory") -> Dict[str, list]:
         sentence_schema = SentenceSchema()
         sentences = sentence_schema.dump(parsed_love_story, many=True)
 
-        return {"payload": [a.get("data") for a in sentences]}  # XXX
+        return ApiResponseModel(payload=[a.get("data") for a in sentences])  # XXX
 
 
 @dataclass

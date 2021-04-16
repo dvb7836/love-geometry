@@ -30,5 +30,5 @@ class LoveStoryOrchestrator:
         circles_of_affection, cheaters = self._circle_finder.find_circles_of_affection(
             serialized_love_story.get("payload"))
 
-        return {"payload": circles_of_affection,
+        return {"payload": circles_of_affection,  # XXX
                 "message": f"cheaters: {cheaters}"}
